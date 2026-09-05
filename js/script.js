@@ -62,18 +62,27 @@
   );
 
   // Group photos by category, preserving first-appearance order (in
-  // display order, i.e. reversed). Any photo with no category falls
+  // display order, i.e. reversed). A photo can belong to MULTIPLE
+  // series at once — separate them with commas in photos-data.js, e.g.
+  // category: "Coastal, Selected Photos". A photo with no category falls
   // back to "Uncategorized" so nothing is ever silently dropped.
   const groups = new Map();
   const order = [];
 
   ORDERED_PHOTOS.forEach((photo) => {
-    const key = (photo.category && photo.category.trim()) || "Uncategorized";
-    if (!groups.has(key)) {
-      groups.set(key, []);
-      order.push(key);
-    }
-    groups.get(key).push(photo);
+    const raw = (photo.category || "").trim();
+    const keys = raw
+      ? raw.split(",").map((s) => s.trim()).filter(Boolean)
+      : [];
+    if (keys.length === 0) keys.push("Uncategorized");
+
+    keys.forEach((key) => {
+      if (!groups.has(key)) {
+        groups.set(key, []);
+        order.push(key);
+      }
+      groups.get(key).push(photo);
+    });
   });
 
   const seriesList = typeof SERIES !== "undefined" ? SERIES : [];

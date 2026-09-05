@@ -130,10 +130,12 @@
 <footer>
   For each photo, set a <strong>Title</strong>, an optional short
   <strong>Caption</strong> (a sentence shown smaller, under the title), and
-  a <strong>Series</strong> (a short group name — e.g. "Coastal",
-  "Portraits", "Night"). Photos with the same series text get grouped
-  together on the site. Leave Series blank to leave a photo in
-  "Uncategorized" for now, and leave Caption blank if you just want a title.
+  one or more <strong>Series</strong> (short group names — e.g. "Coastal",
+  "Portraits", "Night"). A photo can belong to <strong>multiple</strong>
+  series at once — just separate them with a comma, e.g.
+  "Coastal, Selected Photos". Photos sharing a series get grouped together
+  on the site. Leave Series blank to leave a photo in "Uncategorized" for
+  now, and leave Caption blank if you just want a title.
   <br><br>
   When you're done, click "Download finished photos-data.js" and move the
   downloaded file into your site's <code>js/</code> folder, replacing the
@@ -163,13 +165,18 @@
     saved = {};
   }
 
-  countLabel.textContent = PHOTOS.length + " photos — set a title and series for each";
+  countLabel.textContent = PHOTOS.length + " photos — set a title and one or more series for each";
 
   function refreshSuggestions() {
+    // Suggest individual series names (split on commas), not whole
+    // multi-series combinations, so the dropdown stays useful as a
+    // photo can belong to several series at once.
     const seen = new Set();
     grid.querySelectorAll("input.category").forEach((inp) => {
-      const v = inp.value.trim();
-      if (v) seen.add(v);
+      inp.value.split(",").forEach((part) => {
+        const v = part.trim();
+        if (v) seen.add(v);
+      });
     });
     suggestionsList.innerHTML = "";
     Array.from(seen).sort().forEach((v) => {
@@ -218,7 +225,7 @@
     const catInput = document.createElement("input");
     catInput.type = "text";
     catInput.className = "category";
-    catInput.placeholder = "e.g. Coastal";
+    catInput.placeholder = "e.g. Coastal, Selected Photos";
     catInput.setAttribute("list", "category-suggestions");
     catInput.dataset.field = "category";
     catInput.dataset.index = index;
