@@ -15,11 +15,11 @@
 */
 
 const SERIES = [
-  { key: "Selected Photos", title: "Selected Photos", blurb: "" },
+  { key: "Selected", title: "Selected", blurb: "" },
   // Add more series as you assign them in organizer.html, e.g.:
   // { key: "Coastal", title: "Coastal", blurb: "Mornings along the water." },
 ];
 
 // Which series is shown by default when the page loads.
 // Must exactly match one of the "key" values above.
-const DEFAULT_SERIES = "Selected Photos";
+const DEFAULT_SERIES = "Selected";
