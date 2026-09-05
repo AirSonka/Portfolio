@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Organizer — AirSonka</title>
+<style>
+  :root {
+    --bg: #F6F0E4;
+    --panel: #FBF7EE;
+    --ink: #33291E;
+    --muted: #8C7B62;
+    --accent: #A9714A;
+    --rule: #E1D3BC;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, Inter, sans-serif;
+  }
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--bg);
+    border-bottom: 1px solid var(--rule);
+    padding: 1rem 1.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+  }
+  h1 { font-size: 1.1rem; margin: 0; font-weight: 600; }
+  .sub { font-size: 0.78rem; color: var(--muted); margin-top: 0.2rem; }
+  .actions { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
+  button {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+  button.secondary { background: transparent; color: var(--ink); border: 1px solid var(--rule); }
+  #status { font-size: 0.75rem; color: var(--muted); }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+  }
+  .card {
+    background: var(--panel);
+    padding: 0.7rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .card img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    display: block;
+    background: #eee;
+    border-radius: 2px;
+  }
+  .card .num { font-size: 0.7rem; color: var(--accent); font-weight: 600; }
+  .card input {
+    background: #fff;
+    border: 1px solid var(--rule);
+    color: var(--ink);
+    padding: 0.5rem;
+    font-size: 0.85rem;
+    border-radius: 3px;
+    font-family: inherit;
+  }
+  .card input:focus { outline: none; border-color: var(--accent); }
+  .card input.category { font-size: 0.8rem; }
+  .card textarea {
+    background: #fff;
+    border: 1px solid var(--rule);
+    color: var(--ink);
+    padding: 0.5rem;
+    font-size: 0.8rem;
+    border-radius: 3px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 3.2rem;
+  }
+  .card textarea:focus { outline: none; border-color: var(--accent); }
+  .card label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin-bottom: -0.3rem;
+  }
+  footer {
+    padding: 2rem 1.4rem 4rem;
+    color: var(--muted);
+    font-size: 0.82rem;
+    max-width: 640px;
+    line-height: 1.6;
+  }
+  datalist {}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Organizer</h1>
+    <div class="sub" id="count-label">Loading photos…</div>
+  </div>
+  <div class="actions">
+    <span id="status"></span>
+    <button class="secondary" id="save-progress">Save progress</button>
+    <button id="download-btn">Download finished photos-data.js</button>
+  </div>
+</header>
+
+<div class="grid" id="grid"></div>
+
+<datalist id="category-suggestions"></datalist>
+
+<footer>
+  For each photo, set a <strong>Title</strong>, an optional short
+  <strong>Caption</strong> (a sentence shown smaller, under the title), and
+  a <strong>Series</strong> (a short group name — e.g. "Coastal",
+  "Portraits", "Night"). Photos with the same series text get grouped
+  together on the site. Leave Series blank to leave a photo in
+  "Uncategorized" for now, and leave Caption blank if you just want a title.
+  <br><br>
+  When you're done, click "Download finished photos-data.js" and move the
+  downloaded file into your site's <code>js/</code> folder, replacing the
+  old one.
+  <br><br>
+  To also add a short intro sentence under each series heading on the site,
+  edit <code>js/series-data.js</code> directly — it's a short file, easy to
+  hand-edit, listing one line per series.
+  <br><br>
+  Your typing is auto-saved in this browser tab via "Save progress", so you
+  can close this page and come back later without losing work — as long as
+  you use the same browser on the same computer.
+</footer>
+
+<script src="js/photos-data.js"></script>
+<script>
+  const STORAGE_KEY = "airsonka_organizer_progress";
+  const grid = document.getElementById("grid");
+  const countLabel = document.getElementById("count-label");
+  const statusEl = document.getElementById("status");
+  const suggestionsList = document.getElementById("category-suggestions");
+
+  let saved = {};
+  try {
+    saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+  } catch (e) {
+    saved = {};
+  }
+
+  countLabel.textContent = PHOTOS.length + " photos — set a title and series for each";
+
+  function refreshSuggestions() {
+    const seen = new Set();
+    grid.querySelectorAll("input.category").forEach((inp) => {
+      const v = inp.value.trim();
+      if (v) seen.add(v);
+    });
+    suggestionsList.innerHTML = "";
+    Array.from(seen).sort().forEach((v) => {
+      const opt = document.createElement("option");
+      opt.value = v;
+      suggestionsList.appendChild(opt);
+    });
+  }
+
+  PHOTOS.forEach((photo, index) => {
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const num = document.createElement("div");
+    num.className = "num";
+    num.textContent = String(index + 1).padStart(3, "0");
+
+    const img = document.createElement("img");
+    img.src = photo.url;
+    img.loading = "lazy";
+    img.alt = photo.title || "";
+
+    const titleLabel = document.createElement("label");
+    titleLabel.textContent = "Title";
+    const titleInput = document.createElement("input");
+    titleInput.type = "text";
+    titleInput.placeholder = "Photo title";
+    titleInput.dataset.field = "title";
+    titleInput.dataset.index = index;
+    titleInput.value = (saved[index] && saved[index].title !== undefined)
+      ? saved[index].title
+      : (photo.title || "");
+
+    const capLabel = document.createElement("label");
+    capLabel.textContent = "Caption (optional)";
+    const capInput = document.createElement("textarea");
+    capInput.placeholder = "A short sentence about this photo";
+    capInput.dataset.field = "caption";
+    capInput.dataset.index = index;
+    capInput.value = (saved[index] && saved[index].caption !== undefined)
+      ? saved[index].caption
+      : (photo.caption || "");
+
+    const catLabel = document.createElement("label");
+    catLabel.textContent = "Series";
+    const catInput = document.createElement("input");
+    catInput.type = "text";
+    catInput.className = "category";
+    catInput.placeholder = "e.g. Coastal";
+    catInput.setAttribute("list", "category-suggestions");
+    catInput.dataset.field = "category";
+    catInput.dataset.index = index;
+    catInput.value = (saved[index] && saved[index].category !== undefined)
+      ? saved[index].category
+      : (photo.category || "");
+    catInput.addEventListener("change", refreshSuggestions);
+
+    card.appendChild(num);
+    card.appendChild(img);
+    card.appendChild(titleLabel);
+    card.appendChild(titleInput);
+    card.appendChild(capLabel);
+    card.appendChild(capInput);
+    card.appendChild(catLabel);
+    card.appendChild(catInput);
+    grid.appendChild(card);
+  });
+
+  refreshSuggestions();
+
+  function collectData() {
+    const result = {};
+    PHOTOS.forEach((photo, index) => {
+      const titleInput = grid.querySelector('input[data-field="title"][data-index="' + index + '"]');
+      const capInput = grid.querySelector('textarea[data-field="caption"][data-index="' + index + '"]');
+      const catInput = grid.querySelector('input[data-field="category"][data-index="' + index + '"]');
+      result[index] = {
+        title: titleInput ? titleInput.value : (photo.title || ""),
+        caption: capInput ? capInput.value : (photo.caption || ""),
+        category: catInput ? catInput.value : (photo.category || ""),
+      };
+    });
+    return result;
+  }
+
+  document.getElementById("save-progress").addEventListener("click", () => {
+    const data = collectData();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    statusEl.textContent = "Saved " + new Date().toLocaleTimeString();
+    setTimeout(() => (statusEl.textContent = ""), 2500);
+  });
+
+  document.getElementById("download-btn").addEventListener("click", () => {
+    const data = collectData();
+    const esc = (s) => (s || "").replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+
+    const lines = ["const PHOTOS = ["];
+    PHOTOS.forEach((photo, index) => {
+      const d = data[index] || {};
+      lines.push(
+        '  { url: "' + photo.url + '", title: "' + esc(d.title) +
+        '", caption: "' + esc(d.caption) +
+        '", category: "' + esc(d.category) + '" },'
+      );
+    });
+    lines.push("];");
+    const content = lines.join("\n") + "\n";
+
+    const blob = new Blob([content], { type: "text/javascript" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "photos-data.js";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    statusEl.textContent = "Downloaded!";
+    setTimeout(() => (statusEl.textContent = ""), 2500);
+  });
+</script>
+</body>
+</html>

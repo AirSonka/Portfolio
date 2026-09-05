@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AirSonka — Photography</title>
+<meta name="description" content="Photographs by AirSonka, organized by series.">
+
+<meta property="og:title" content="AirSonka — Photography">
+<meta property="og:description" content="Photographs by AirSonka, organized by series.">
+<meta property="og:image" content="images/001.jpg">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#F6F0E4">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="#top" class="nav-brand">AirSonka</a>
+  <div class="filter-bar" id="filter-bar">
+    <!-- Filter pills injected by js/script.js, one per series -->
+  </div>
+  <div class="nav-links">
+    <a href="#about">About</a>
+    <a href="#contact">Contact</a>
+  </div>
+</div>
+
+<section id="top" class="hero">
+  <!--
+    To feature a specific photo as the banner, set data-hero below to
+    that photo's path, e.g. data-hero="images/045.jpg". Leave it empty
+    to automatically use whichever photo displays first.
+  -->
+  <div class="hero-image" id="hero-image" data-hero=""></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <p class="eyebrow eyebrow-light">Photography</p>
+    <h1 class="site-title">AirSonka</h1>
+    <p class="tagline tagline-light">Selected photographs, organized by series.</p>
+  </div>
+</section>
+
+<main id="series-container">
+  <!-- Series sections injected by js/script.js from js/photos-data.js + js/series-data.js -->
+</main>
+
+<section id="about" class="about">
+  <div class="about-inner">
+    <p class="eyebrow">About</p>
+    <p class="about-text">
+      Photographs from behind the lens of AirSonka. Replace this paragraph
+      with a couple of sentences about who you are and what you shoot.
+    </p>
+  </div>
+</section>
+
+<footer id="contact" class="site-footer">
+  <div class="footer-inner">
+    <p class="eyebrow">Contact</p>
+    <a class="contact-link" href="mailto:you@example.com">you@example.com</a>
+    <p class="footer-note">Built and self-hosted. No subscriptions.</p>
+  </div>
+</footer>
+
+<div id="lightbox" class="lightbox" hidden>
+  <button class="lightbox-close" aria-label="Close">&times;</button>
+  <figure class="lightbox-figure">
+    <img id="lightbox-img" src="" alt="">
+    <figcaption id="lightbox-caption"></figcaption>
+  </figure>
+</div>
+
+<script src="js/photos-data.js"></script>
+<script src="js/series-data.js"></script>
+<script src="js/script.js"></script>
+</body>
+</html>
