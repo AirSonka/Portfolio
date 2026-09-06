@@ -89,7 +89,12 @@
   const seriesMeta = new Map(seriesList.map((s) => [s.key, s]));
   const definedOrder = seriesList.map((s) => s.key);
   const remaining = order.filter((k) => !definedOrder.includes(k));
-  const renderOrder = [...definedOrder, ...remaining].filter((k) => groups.has(k));
+  // "Uncategorized" is intentionally excluded from display — photos with
+  // no series assigned yet simply don't show up until you give them one
+  // in organizer.html. This keeps the site from ever showing a messy
+  // catch-all collection.
+  const renderOrder = [...definedOrder, ...remaining]
+    .filter((k) => groups.has(k) && k !== "Uncategorized");
 
   const sectionEls = {};
 
